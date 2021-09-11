@@ -1,0 +1,329 @@
+---
+title: "Presentation for uri"
+author: "Ron Dulkin"
+date: "1 1 2021"
+output: rmdformats::readthedown
+---
+
+# Load Packages
+
+```{r}
+pacman::p_load(data.table, finalfit,psych,dplyr,ggplot2,extrafont,MASS,ggiraph,lmerTest,tidyverse,performance,stats,tidyr,lubridate,dtplyr)
+```
+
+# load proccessed and unproccessed data
+
+```{r}
+Data <- fread(file.choose())
+undata <- fread(file.choose())
+lifetime <- fread(file.choose())
+```
+
+```{r}
+ff_glimpse(lifetime)
+```
+
+
+```{r}
+hist(lifetime$revives)
+hist(lifetime$teamKills)
+```
+
+```{r}
+spec <- Data[playerId=="account.ed94f2e0261c47a28c315da6342499a9",,]
+spec$createdAt <- as_datetime(spec$createdAt)
+spec <-spec[order(spec$createdAt,decreasing = F)]
+#initial row
+try1 <- spec[1, "p_revives" := .(0)]
+
+#subsequent rows
+for (nn in 2:nrow(try1)){
+  new_p_revives <- try1[nn - 1L, p_revives]
+  try1[nn,p_revives := .(new_p_revives+ .5 * (try1[nn - 1L, watched_revives]-new_p_revives))]
+}
+class(try)
+View(mult[,c("createdAt","revives","watched_revives","p_revives"),])
+corr.test(mult$p_revives,mult$revives,method = "pearson")
+```
+
+```{r}
+mult <- data.table() 
+unq_players <- unique(Data$playerId)
+for (mm in 1:length(unq_players)){
+  spec <- Data[playerId==unq_players[mm],,]
+  spec$createdAt <- as_datetime(spec$createdAt)
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+  #initial row
+  try <- spec[1, "p_revives" := .(0)]
+  if(NROW(spec)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p_revives <- try[nn - 1L, p_revives]
+      try[nn,p_revives := .(new_p_revives+ 0.1 * (try[nn - 1L, watched_revives]-new_p_revives))]
+    }
+  }
+  mult <- rbind(mult,try)
+}
+unq_players[mm]
+spec <- Data[playerId==unq_players[mm],,]
+
+```
+
+```{r}
+fwrite(Full_Data,"D:/Ron/WORKS/Thesis/16.12.20/Full_Data_after_5.csv")
+corr.test(mult$revives,mult$p_revives,method = "pearson")
+mult$
+```
+```{r}
+Data <- mult
+mult <- data.table() 
+unq_players <- unique(Data$playerId)
+for (mm in 1:length(unq_players)){
+  spec <- Data[playerId==unq_players[mm],,]
+  spec$createdAt <- as_datetime(spec$createdAt)
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+  #initial row
+  try <- spec[1, "p_teamKills" := .(0)]
+  if(NROW(spec)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p_teamKills <- try[nn - 1L, p_teamKills]
+      try[nn,p_teamKills := .(new_p_teamKills+ 0.1 * (try[nn - 1L, watched_teamKills]-new_p_teamKills))]
+    }
+  }
+  mult <- rbind(mult,try)
+}
+```
+
+
+```{r}
+
+Data <- Data %>% 
+  rename(
+    p_revives=p_revives_0.1,
+    p_assists=p_assists_0.1,
+    p_teamKills=p_teamKills_0.1
+  )
+colnames(Data)[which(names(Data) == "p_revives")] <- "p_revives_0.1"
+colnames(Data)[which(names(Data) == "p_assists")] <- "p_assists_0.1"
+colnames(Data)[which(names(Data) == "p_teamKills")] <- "p_teamKills_0.1"
+Data$createdAt <- as_datetime(Data$createdAt)
+Data1 <- fread(file.choose())
+Data <- distinct(Data1)
+Data_min <- Data[,list(playerId,createdAt,revives,watched_revives),]
+
+mult <- data.table() 
+unq_players <- unique(Data_min$playerId)
+for (mm in 1:length(unq_players)){
+  spec <- Data_min[playerId==unq_players[mm],,]
+  spec$createdAt <- as_datetime(spec$createdAt)
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+  #initial row
+  try <- spec[1, "p_revives_5" := .(0)]
+  if(NROW(spec)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p_revives <- try[nn - 1L, p_revives_5]
+      try[nn,p_revives_5 := .(new_p_revives+ 5 * (try[nn - 1L, watched_revives]-new_p_revives))]
+    }
+  }
+  mult <- rbind(mult,try)
+}
+Save_Data_revives <- mult$p_revives_5
+gc()
+gc()
+gc()
+gc()
+
+Data_min <- Data[,list(playerId,createdAt,assists,watched_assists),]
+mult <- data.table() 
+unq_players <- unique(Data_min$playerId)
+for (mm in 1:length(unq_players)){
+  spec <- Data_min[playerId==unq_players[mm],,]
+  spec$createdAt <- as_datetime(spec$createdAt)
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+  #initial row
+  try <- spec[1, "p_assists_5" := .(0)]
+  if(NROW(spec)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p_assists <- try[nn - 1L, p_assists_5]
+      try[nn,p_assists_5 := .(new_p_assists+ 5 * (try[nn - 1L, watched_assists]-new_p_assists))]
+    }
+  }
+  mult <- rbind(mult,try)
+}
+Save_Data_assists <- mult$p_assists_5
+gc()
+gc()
+gc()
+gc()
+
+Data_min <- Data[,list(playerId,createdAt,teamKills,watched_teamKills),]
+mult <- data.table() 
+unq_players <- unique(Data_min$playerId)
+for (mm in 1:length(unq_players)){
+  spec <- Data_min[playerId==unq_players[mm],,]
+  spec$createdAt <- as_datetime(spec$createdAt)
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+  #initial row
+  try <- spec[1, "p_teamKills_5" := .(0)]
+  if(NROW(spec)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p_teamKills <- try[nn - 1L, p_teamKills_5]
+      try[nn,p_teamKills_5 := .(new_p_teamKills+ 5 * (try[nn - 1L, watched_teamKills]-new_p_teamKills))]
+    }
+  }
+  mult <- rbind(mult,try)
+}
+Save_Data_teamKills <- mult$p_teamKills_5
+gc()
+gc()
+gc()
+gc()
+```
+```{r}
+
+Full_Data <- data.table() 
+for (mm in 1:length(unq_players)){
+  spec <- Data[playerId==unq_players[mm],,]
+  spec <-spec[order(spec$createdAt,decreasing = F)]
+Full_Data <- rbind(Full_Data,spec)
+  }
+Full_Data$p_revives_5 <- Save_Data_revives
+Full_Data$p_assists_5 <- Save_Data_assists
+Full_Data$p_teamKills_5 <- Save_Data_teamKills
+
+```
+
+```{r}
+Data1 <- Data[playerId=='account.a1d5e8c25d614cd681ae81c81c9c4407',,]
+class(Data$createdAt)
+model.building <- function(data=.,behavior,alpha){
+#new_colnames <- c('playerId','createdAt',paste0(behavior),paste0('watched_',behavior))
+#fixed_colnames <- match(new_colnames,colnames(data))
+#fixed_colnames <- new_colnames
+#Data_min <- data
+#Data_min <- data[,fixed_colnames,]
+#Data_min <- as.data.table(data)
+col.names <-c('createdAt',paste0(behavior),paste0('watched_',behavior)) 
+data <- as.data.table(data)
+data <- data[,col.names,with=FALSE]
+
+#,paste0('watched_',behavior))
+#Data_min <- as.data.table(dplyr::select(data,c(playerId,createdAt,revives,watched_revives)))
+#unq_players <- unique(Data_min$playerId)
+#for (mm in 1:length(unq_players)){
+#  spec <- Data_min[playerId==unq_players[mm],,]
+#  spec$createdAt <- as_datetime(spec$createdAt)
+data <-data[order(createdAt,decreasing = F)]
+ #initial row
+  try <- data[1, x := .(0)]
+  if(NROW(data)==1){
+    
+  }
+  else {
+  #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p <- try[nn - 1L,x]
+      try[nn, x := .(new_p+ alpha * (try[nn - 1L,3]-new_p))]
+    }
+  }
+
+return(try$x)
+}
+Data2 <- model.building.revives.0.1(Data1)
+Data3 <- Data[model.building(data = ..,behavior = 'revives',,alpha = 0.1),,by=playerId]
+model.building.revives.0.1 <- function(x=file){
+  model.building(x,'revives',0.1)
+}
+Data3 <- Data[,order(.SD,createdAt,decreasing = F),playerId]
+unique_players <- unique(Data$playerId)
+
+Data3 <- Data1[,lapply(.SD,model.building.revives.0.1),by=playerId]
+
+Data3 <- Data1[,.SD,by=playerId][model.building.revives.0.1(.BY)]
+Data3 <- setDT(Data1)[, model.building.revives.0.1(.SD), by=playerId]
+Data3 <- data.table()
+for(ll in unique(Data$playerId)) {
+  Data2 <- model.building.revives.0.1(Data[playerId==ll])
+  Data3 <- rbind(Data3,Data2) 
+}
+ 
+  mult <- rbind(mult,try)
+}
+Save_Data_teamKills <- mult$p_teamKills_5
+gc()
+gc()
+gc()
+gc()
+}
+
+Data3 <- Data1 %>% 
+  group_by(playerId) %>% #group by your variable
+  nest() %>% #nest you data
+  as.data.table() %>% 
+  mutate(fit = map(data, model.building.revives.0.1(.))) %>% #fit your function
+  mutate(tidy = map(fit, broom::tidy)) %>% #only applicable if your output is a list
+  unnest(tidy) %>% #only applicable if your output is a data.frame
+  select(-c(data,fit)) #remove unwanted nested cols
+cols_chosen <- c("playerId", "createdAt")
+Data2 <- Data1[,cols=cols_chosen,]
+```
+```{r}
+model.building <- function(data=.,behavior,wbehavior,alpha){
+  col.names <-c('createdAt',paste0(behavior),paste0('watched_',wbehavior)) 
+  data <- as.data.table(data)
+  data <- data[,col.names,with=FALSE]
+  data <-data[order(createdAt,decreasing = F)]
+  #initial row
+  try <- data[1, x := .(0)]
+  if(NROW(data)==1){
+  }
+  else {
+    #subsequent rows
+    for (nn in 2:nrow(try)){
+      new_p <- try[nn - 1L,x]
+      try[nn, x := .(new_p+ alpha * (try[nn - 1L,3]-new_p))]
+    }
+  }
+  
+  return(try$x)
+}
+model.building.revives.0.1 <- function(x=file){
+  model.building(x,'revives',0.1)
+}
+Data2 <- fread(file.choose())
+
+#revives 0.1
+Data <- Data2[,.(playerId,createdAt,revives,watched_revives)]
+Data3 <- Data[,model.building(.SD,'revives',0.1),by=playerId]
+Data2$p_revives_0.1 <- Data3$V1
+
+#assists 0.1
+Data <- Data2[,.(playerId,createdAt,assists,watched_assists)]
+Data3 <- Data[,model.building(.SD,'assists',0.1),by=playerId]
+Data2$p_assists_0.1 <- Data3$V1
+
+#teamKills 0.1
+Data <- Data2[,.(playerId,createdAt,teamKills,watched_teamKills)]
+Data3 <- Data[,model.building(.SD,'teamKills',0.1),by=playerId]
+Data2$p_teamKills_0.1 <- Data3$V1
+```
+

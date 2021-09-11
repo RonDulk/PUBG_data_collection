@@ -1,0 +1,193 @@
+---
+title: "Thesis Pre-processing"
+author: "Ron Dulkin"
+date: "1 1 2021"
+output: rmdformats::readthedown
+---
+
+# Load Packages
+
+```{r}
+pacman::p_load(data.table, finalfit,psych,dplyr,ggplot2,extrafont,MASS,ggiraph,lmerTest,tidyverse,performance,stats,readr)
+```
+
+# create list of dates
+
+```{r}
+dates=c(paste0(c(21:31),".12.20"),paste0(c(1:21),".1.21"))
+dates=as.list(dates)
+dates=paste0("D:/Ron/WORKS/Thesis/16.12.20/",dates)
+```
+
+# pre-proccess data
+
+```{r}
+All_Day_Games <- data.table()
+  # Load new player List
+  NPList <- fread(file.choose())
+  NPList <- unique(NPList$playerId)
+# this is for squad data
+for(i in 1:length(dates)){
+  # Upload the games of a single day
+  Day_Game <- fread(paste0(dates[i],"/matches_squad_new.csv"))
+  Day_Game <- distinct(Day_Game)
+  # Make a list of the group numbers of player's group
+  GNList <- Day_Game[playerId%in%NPList,rosterId,]
+  GNList <- unique(GNList)
+  # Filter out all players that are not in said groups
+  Day_Game <- Day_Game[rosterId%in%GNList,,]
+  Day_Game <- Day_Game[!rosterId=="",,]
+  # THe real trouble
+  Day_Game_1 <- Day_Game %>%
+  group_by(rosterId) %>% 
+  summarise(check=n(),watched_revives=sum(revives)-revives,playerId=playerId,watched_teamKills=sum(teamKills)-teamKills,watched_assists=sum(assists)-assists,
+    RPM=revives/(timeSurvived/60),APM=assists/(timeSurvived/60),TPM=teamKills/(timeSurvived/60)) %>% 
+  summarise(watched_RPM=(sum(RPM)-RPM)/(check-1),watched_APM=(sum(APM)-APM)/(check-1),watched_TPM=(sum(TPM)-TPM)/(check-1),check=check,watched_teamKills=watched_teamKills,watched_assists=watched_assists,watched_revives=watched_revives,playerId=playerId,rosterId=rosterId)
+
+Day_Game <- left_join(Day_Game,Day_Game_1)
+
+# Filtering out all players that are not in our list
+
+  Day_Game <- Day_Game %>% 
+  filter(playerId%in%NPList)
+  # Adding to one General Table
+  All_Day_Games <- rbind(All_Day_Games,Day_Game)
+}
+  NPList <- fread(file.choose())
+  NPList <- unique(NPList$playerId)
+# this is for squad_FPP data
+for(i in 1:length(dates)){
+  # Load new player List
+  # Upload the games of a single day
+  Day_Game <- fread(paste0(dates[i],"/matches_squad_fpp_new.csv"))
+  Day_Game <- distinct(Day_Game)
+  # Make a list of the group numbers of player's group
+  GNList <- Day_Game[playerId%in%NPList,rosterId,]
+  GNList <- unique(GNList)
+  # Filter out all players that are not in said groups
+  Day_Game <- Day_Game[rosterId%in%GNList,,]
+  Day_Game <- Day_Game[!rosterId=="",,]
+  # THe real trouble
+  Day_Game_1 <- Day_Game %>%
+  group_by(rosterId) %>% 
+  summarise(check=n(),watched_revives=sum(revives)-revives,playerId=playerId,watched_teamKills=sum(teamKills)-teamKills,watched_assists=sum(assists)-assists,
+    RPM=revives/(timeSurvived/60),APM=assists/(timeSurvived/60),TPM=teamKills/(timeSurvived/60)) %>% 
+  summarise(watched_RPM=(sum(RPM)-RPM)/(check-1),watched_APM=(sum(APM)-APM)/(check-1),watched_TPM=(sum(TPM)-TPM)/(check-1),check=check,watched_teamKills=watched_teamKills,watched_assists=watched_assists,watched_revives=watched_revives,playerId=playerId,rosterId=rosterId)
+
+Day_Game <- left_join(Day_Game,Day_Game_1)
+
+# Filtering out all players that are not in our list
+
+  Day_Game <- Day_Game %>% 
+  filter(playerId%in%NPList)
+  # Adding to one General Table
+  All_Day_Games <- rbind(All_Day_Games,Day_Game)
+}
+```
+
+
+
+
+# Load new player List
+```{r}
+NPList <- fread(file.choose())
+NPList <- unique(NPList$playerId)
+```
+
+# Upload the games of a single day
+
+```{r}
+Day_Game <- fread(file.choose())
+```
+
+# Make a list of the group numbers of player's group
+```{r}
+GNList <- Day_Game[playerId%in%NPList,rosterId,]
+GNList <- unique(GNList)
+```
+
+# Filter out all players that are not in said groups
+
+```{r}
+Day_Game_1 <- Day_Game[rosterId%in%GNList,,]
+Day_Game_1 <- Day_Game_1[!rosterId=="",,]
+```
+
+# THe real trouble
+
+```{r}
+Day_Game_2 <- Day_Game_1 %>%
+  group_by(rosterId) %>% 
+  summarise(check=n(),watched_revives=sum(revives)-revives,playerId=playerId,watched_teamKills=sum(teamKills)-teamKills,watched_assists=sum(assists)-assists,
+    RPM=revives/(timeSurvived/60),APM=assists/(timeSurvived/60),TPM=teamKills/(timeSurvived/60)) %>% 
+  summarise(watched_RPM=(sum(RPM)-RPM)/(check-1),watched_APM=(sum(APM)-APM)/(check-1),watched_TPM=(sum(TPM)-TPM)/(check-1),check=check,watched_teamKills=watched_teamKills,watched_assists=watched_assists,watched_revives=watched_revives,playerId=playerId,rosterId=rosterId)
+Day_Game_2 <- as.data.table(Day_Game_2)
+Day_Game_3 <- left_join(Day_Game_1,Day_Game_2)
+class(Day_Game_4)
+```
+# Filtering out all players that are not in our list
+
+```{r}
+Day_Game_4 <- Day_Game_3 %>% 
+  filter(playerId%in%NPList)
+```
+```{r}
+All_Day_Games_21 <- data.table()
+
+
+#subSet1 <- fread('D:/Ron/WORKS/Thesis/16.12.20/21.12.20/matches_squad_new.csv',nrows=5000000,header = TRUE)
+subSet1 <- fread('D:/Ron/WORKS/Thesis/16.12.20/21.12.20/matches_squad_new.csv',skip = 60000000,nrows = 5000000,col.names=colnames_new)
+subSet1 <- distinct(subSet1)
+GNList <- subSet1[playerId%in%NPList,rosterId,]
+GNList <- unique(GNList)
+
+subSet1 <- subSet1[rosterId%in%GNList,,]
+subSet1 <- subSet1[!rosterId=="",,]
+subSet1_1 <- subSet1 %>%
+  group_by(rosterId) %>% 
+  summarise(check=n(),watched_revives=sum(revives)-revives,playerId=playerId,watched_teamKills=sum(teamKills)-teamKills,watched_assists=sum(assists)-assists,
+    RPM=revives/(timeSurvived/60),APM=assists/(timeSurvived/60),TPM=teamKills/(timeSurvived/60)) %>% 
+  summarise(watched_RPM=(sum(RPM)-RPM)/(check-1),watched_APM=(sum(APM)-APM)/(check-1),watched_TPM=(sum(TPM)-TPM)/(check-1),check=check,watched_teamKills=watched_teamKills,watched_assists=watched_assists,watched_revives=watched_revives,playerId=playerId,rosterId=rosterId)
+subSet1 <- left_join(subSet1,subSet1_1)
+# Filtering out all players that are not in our list
+subSet1 <- as.data.table(subSet1)
+  subSet1 <- subSet1[playerId%in%NPList,,]
+  # Adding to one General Table
+  All_Day_Games_21 <- rbind(All_Day_Games_21,subSet1)
+  
+  
+colnames_new <- head(colnames(All_Day_Games_21),40)
+    
+subSet2 <- fread('D:/Ron/WORKS/Thesis/16.12.20/21.12.20/matches_squad_new.csv',skip = 20000000,nrows = 5000000,col.names=colnames_new)
+GNList <- subSet2[playerId%in%NPList,rosterId,]
+GNList <- unique(GNList)
+
+subSet2 <- subSet2[rosterId%in%GNList,,]
+subSet2 <- subSet2[!rosterId=="",,]
+subSet2_1 <- subSet2 %>%
+  group_by(rosterId) %>% 
+  summarise(check=n(),watched_revives=sum(revives)-revives,playerId=playerId,watched_teamKills=sum(teamKills)-teamKills,watched_assists=sum(assists)-assists,
+    RPM=revives/(timeSurvived/60),APM=assists/(timeSurvived/60),TPM=teamKills/(timeSurvived/60)) %>% 
+  summarise(watched_RPM=(sum(RPM)-RPM)/(check-1),watched_APM=(sum(APM)-APM)/(check-1),watched_TPM=(sum(TPM)-TPM)/(check-1),check=check,watched_teamKills=watched_teamKills,watched_assists=watched_assists,watched_revives=watched_revives,playerId=playerId,rosterId=rosterId)
+subSet2 <- left_join(subSet2,subSet2_1)
+
+# Filtering out all players that are not in our list
+subSet2 <- as.data.table(subSet2)
+  subSet2 <- subSet2[playerId%in%NPList,,]
+  # Adding to one General Table
+  All_Day_Games_21 <- rbind(All_Day_Games_21,subSet2)
+```
+```{r}
+All_Day_Games <- distinct(All_Day_Games)
+fwrite(All_Day_Games,'D:/Ron/WORKS/Thesis/16.12.20/squad_fpp_new_proccessed_new.csv')
+```
+
+```{r}
+Data1 <- fread(file.choose())
+All_Day_Games_all <-rbind(All_Day_Games_all,Data1)
+All_Day_Games_all <- distinct(All_Day_Games_all)
+class(All_Day_Games_all)
+ff_glimpse(All_Day_Games_all)
+fwrite(All_Day_Games_all,'D:/Ron/WORKS/Thesis/16.12.20/fully_proccessed_new.csv')
+```
+

@@ -1,0 +1,33 @@
+p_good(t+1) = p_good(t)+alpha*(teammates_good(t) - p_good(t))
+correlation between p_good(t+1)~o_good(t+1)
+
+# add more variables to the model after conducting column
+o_good(t+1)~p_good(t+1)+X+Y+Z
+
+# compare to a simple model
+o_good(t+1)~teammates_good(t)
+
+# check several alpha's
+p_good(t=0)=-5,-1,0,1,5
+
+# check other players' effect on even otherer players
+ron-> subjects->other players->even otherer players
+
+
+
+work flow:
+
+hist(of revives per players througout games)
+
+#filter less than 10 games and above 100
+
+# again check proper p_good(t=0)
+p_good(t=0)=0,2,8
+p_good_per_minute(t=0)=0,0.2,0.8
+
+# again check proper alpha
+alpha = 0.2,0.5,0.7
+
+
+ 
+
